@@ -1,56 +1,67 @@
 package com.example.testcase.service;
 
-import com.example.testcase.entity.Goods;
-import com.example.testcase.validation.ValidationException;
-import jakarta.validation.Validator;
+import com.example.testcase.dto.GoodsDto;
+import com.example.testcase.exception.ResourceNotFoundException;
+import com.example.testcase.mapper.GoodsMapper;
+import com.example.testcase.repository.GoodsRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor
 public class GoodsServiceImpl implements GoodsService {
 
-    private static final Map<Long, Goods> GOODS_MAP = new HashMap<>();
-
-    private static final AtomicLong GOODS_ID = new AtomicLong();
-
-    private final Validator validator;
-
-    private final ValidationService validationService;
+    private final GoodsRepository goodsRepository;
 
     @Override
-    public void create(Goods goods) throws ValidationException {
-        if (validationService.isValidGoods(goods)) {
-            final Long goodId = GOODS_ID.incrementAndGet();
-            goods.setId(goodId);
-            GOODS_MAP.put(goodId, goods);
-        }
+    @Transactional
+    public GoodsDto createGoods(@Valid GoodsDto goodsDto) {
+        var goods = GoodsMapper.mapToGoods(goodsDto);
+        var savedGoods = goodsRepository.save(goods);
+        return GoodsMapper.mapToGoodsDto(savedGoods);
     }
 
     @Override
-    public List<Goods> getAll() {
-        return new ArrayList<>(GOODS_MAP.values());
+    @Transactional
+    public List<GoodsDto> getAll() {
+        return goodsRepository.findAll()
+                .stream().map(GoodsMapper::mapToGoodsDto)
+                .toList();
     }
 
     @Override
-    public Goods getGoodsById(Long id) {
-        return GOODS_MAP.get(id);
+    @Transactional
+    public GoodsDto getGoodsById(Long id) {
+        var goods = goodsRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Goods is not exists with given ID: " + id));
+        return GoodsMapper.mapToGoodsDto(goods);
     }
 
     @Override
-    public boolean update(Long id, Goods goods) throws ValidationException {
-        if (validationService.isValidGoods(goods) && GOODS_MAP.containsKey(id)) {
-            goods.setId(id);
-            GOODS_MAP.put(id, goods);
-        }
-        return true;
+    @Transactional
+    public GoodsDto updateGoods(Long id, @Valid GoodsDto goodsDto) {
+        var goods = goodsRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Goods is not exists with given ID: " + id));
+
+        goods.setName(goodsDto.name());
+        goods.setDescription(goodsDto.description());
+        goods.setPrice(goodsDto.price());
+        goods.setAvailability(goodsDto.availability());
+
+        goodsRepository.save(goods);
+
+        return GoodsMapper.mapToGoodsDto(goods);
     }
 
     @Override
-    public boolean delete(Long id) {
-        return GOODS_MAP.remove(id) != null;
+    @Transactional
+    public void deleteGoods(Long id) {
+        var goods = goodsRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Goods is not exists with given ID: " + id));
+        goodsRepository.delete(goods);
     }
 }

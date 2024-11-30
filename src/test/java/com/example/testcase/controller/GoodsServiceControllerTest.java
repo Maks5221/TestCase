@@ -1,6 +1,7 @@
 package com.example.testcase.controller;
 
-import com.example.testcase.entity.Goods;
+import com.example.testcase.dto.GoodsDto;
+import com.example.testcase.entity.Availability;
 import com.example.testcase.service.GoodsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -32,19 +33,19 @@ public class GoodsServiceControllerTest {
 
 
     @Test
-    void create() throws Exception {
-        Goods goods = new Goods(1L, "Milk", "Coconut milk", 95, "Available");
+    void createGoods() throws Exception {
+        GoodsDto goods = new GoodsDto(1L, "Milk", "Coconut milk", 95, Availability.AVAILABLE);
         String goodsJson = objectMapper.writeValueAsString(goods);
         mockMvc.perform(post("/goods/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(goodsJson))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void read() throws Exception {
-        Goods goods = new Goods(1L, "Milk", "Coconut milk", 95, "Available");
-        Goods goods1 = new Goods(1L, "Beef", "Fresh", 282, "Not available");
+    void getAll() throws Exception {
+        GoodsDto goods = new GoodsDto(1L, "Milk", "Coconut milk", 95, Availability.AVAILABLE);
+        GoodsDto goods1 = new GoodsDto(1L, "Beef", "Fresh", 282, Availability.ABSENT);
         when(goodsService.getAll()).thenReturn(List.of(goods, goods1));
         mockMvc.perform(get("/goods/all"))
                 .andExpect(status().isOk());
@@ -52,7 +53,7 @@ public class GoodsServiceControllerTest {
 
     @Test
     void getGoodsById() throws Exception {
-        Goods goods = new Goods(1L, "Milk", "Coconut milk", 95, "Available");
+        GoodsDto goods = new GoodsDto(1L, "Milk", "Coconut milk", 95, Availability.AVAILABLE);
         when(goodsService.getGoodsById(1L)).thenReturn(goods);
         mockMvc.perform(get("/goods/{id}", 1L))
                 .andExpect(status().isOk())
@@ -60,7 +61,7 @@ public class GoodsServiceControllerTest {
                 .andExpect(jsonPath("$.name").value("Milk"))
                 .andExpect(jsonPath("$.description").value("Coconut milk"))
                 .andExpect(jsonPath("$.price").value(95))
-                .andExpect(jsonPath("$.availability").value("Available"));
+                .andExpect(jsonPath("$.availability").value("AVAILABLE"));
     }
 
 }

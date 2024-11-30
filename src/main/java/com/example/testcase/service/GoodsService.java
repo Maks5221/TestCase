@@ -1,19 +1,18 @@
 package com.example.testcase.service;
 
-import com.example.testcase.entity.Goods;
-import com.example.testcase.validation.ValidationException;
+import com.example.testcase.dto.GoodsDto;
 
 import java.util.List;
 
 public interface GoodsService {
 
-    void create(Goods goods) throws ValidationException;
+    GoodsDto createGoods(GoodsDto goodsDto);
 
-    List<Goods> getAll();
+    List<GoodsDto> getAll();
 
-    Goods getGoodsById(Long id);
+    GoodsDto getGoodsById(Long id);
 
-    boolean update(Long id, Goods goods) throws ValidationException;
+    GoodsDto updateGoods(Long id, GoodsDto goodsDto);
 
-    boolean delete(Long id);
+    void deleteGoods(Long id);
 }

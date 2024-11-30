@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: TestCase
+  datasource:
+    url: jdbc:postgresql://localhost:5432/TestCase
+    username: postgres
+    password: pass
+  jpa:
+    hibernate:
+      ddl-auto: validate
