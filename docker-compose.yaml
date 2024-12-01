@@ -1,0 +1,27 @@
+version: '3.8'
+
+volumes:
+  pg_testCase:
+
+services:
+  TestCase:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=TestCase
+    volumes:
+      - pg_testCase:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+  app:
+    restart: always
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - TestCase
+    environment:
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://TestCase:5432/TestCase'
+      JAVA_OPTS: '-Xmx512m'
